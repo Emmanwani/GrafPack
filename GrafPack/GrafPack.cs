@@ -17,6 +17,8 @@ namespace GrafPack
         private bool createSquare = false;
         private bool createTriangle = false;
         private bool createCircle = false;
+        private TextBox currentTextBox; // Track the current text box being added
+
 
         private bool isMovingShape = false;
         private Point lastMousePosition;
@@ -31,6 +33,7 @@ namespace GrafPack
             this.MouseMove += MouseMoveHandler;
             this.MouseDown += MouseDownHandler;
             this.MouseUp += MouseUpHandler;
+
         }
 
         private void InitializeMenu()
@@ -40,6 +43,7 @@ namespace GrafPack
             MenuItem createItem = new MenuItem("&Create");
             MenuItem moveItem = new MenuItem("&Move");
             MenuItem rotateItem = new MenuItem("&Rotate");
+            MenuItem colorMenu = new MenuItem("&Colour");
             MenuItem deleteItem = new MenuItem("&Delete");
             MenuItem exitItem = new MenuItem("&Exit");
 
@@ -48,29 +52,113 @@ namespace GrafPack
             MenuItem triangleItem = new MenuItem("&Triangle");
             MenuItem circleItem = new MenuItem("&Circle");
 
+            // Create sub-menu items for rotation angles
+            MenuItem rotate45Item = new MenuItem("&45 Degrees");
+            MenuItem rotate90Item = new MenuItem("&90 Degrees");
+            MenuItem rotate180Item = new MenuItem("&180 Degrees");
+
+            MenuItem outlineItem = new MenuItem("&Outline colour");
+            MenuItem fillColorMenu = new MenuItem("&Fill Colour");
+
             // Add items to main menu
             mainMenu.MenuItems.Add(createItem);
             mainMenu.MenuItems.Add(moveItem);
+            mainMenu.MenuItems.Add(colorMenu);
             mainMenu.MenuItems.Add(rotateItem);
             mainMenu.MenuItems.Add(deleteItem);
             mainMenu.MenuItems.Add(exitItem);
+
+
+            colorMenu.MenuItems.Add(outlineItem);
+            colorMenu.MenuItems.Add(fillColorMenu);
             createItem.MenuItems.Add(squareItem);
             createItem.MenuItems.Add(triangleItem);
             createItem.MenuItems.Add(circleItem);
+            // Add sub-menu items for rotation angles
+            rotateItem.MenuItems.Add(rotate45Item);
+            rotateItem.MenuItems.Add(rotate90Item);
+            rotateItem.MenuItems.Add(rotate180Item);
+
+            MenuItem colorRed = new MenuItem("&Red");
+            MenuItem colorBlue = new MenuItem("&Blue");
+            MenuItem colorGreen = new MenuItem("&Green");
+            MenuItem colorYellow = new MenuItem("&Yellow");
+            MenuItem colorBlack = new MenuItem("&Black");
+
+            // Create a new menu for changing the fill color
+            MenuItem fillRed = new MenuItem("&Red");
+            MenuItem fillBlue = new MenuItem("&Blue");
+            MenuItem fillGreen = new MenuItem("&Green");
+            MenuItem fillYellow = new MenuItem("&Yellow");
+            MenuItem fillBlack = new MenuItem("&Black");
+
+            outlineItem.MenuItems.Add(colorRed);
+            outlineItem.MenuItems.Add(colorBlue);
+            outlineItem.MenuItems.Add(colorGreen);
+            outlineItem.MenuItems.Add(colorYellow);
+            outlineItem.MenuItems.Add(colorBlack);
+
+            fillColorMenu.MenuItems.Add(fillRed);
+            fillColorMenu.MenuItems.Add(fillBlue);
+            fillColorMenu.MenuItems.Add(fillGreen);
+            fillColorMenu.MenuItems.Add(fillYellow);
+            fillColorMenu.MenuItems.Add(fillBlack);
+
+            colorRed.Click += (sender, e) => { ChangeShapeColor(Color.Red); };
+            colorBlue.Click += (sender, e) => { ChangeShapeColor(Color.Blue); };
+            colorGreen.Click += (sender, e) => { ChangeShapeColor(Color.Green); };
+            colorYellow.Click += (sender, e) => { ChangeShapeColor(Color.Yellow); };
+            colorBlack.Click += (sender, e) => { ChangeShapeColor(Color.Black); };
+
+            // Event handlers for fill color selection
+            fillRed.Click += (sender, e) => { ChangeFillColor(Color.Red); };
+            fillBlue.Click += (sender, e) => { ChangeFillColor(Color.Blue); };
+            fillGreen.Click += (sender, e) => { ChangeFillColor(Color.Green); };
+            fillYellow.Click += (sender, e) => { ChangeFillColor(Color.Yellow); };
+            fillBlack.Click += (sender, e) => { ChangeFillColor(Color.Black); };
+
 
 
             // Attach event handlers
             moveItem.Click += MoveShape;
-            rotateItem.Click += RotateShape;
             deleteItem.Click += DeleteShape;
             exitItem.Click += ExitApplication;
             squareItem.Click += SelectSquare;
             triangleItem.Click += SelectTriangle;
             circleItem.Click += SelectCircle;
+            rotate45Item.Click += RotateShapeBy45;
+            rotate90Item.Click += RotateShapeBy90;
+            rotate180Item.Click += RotateShapeBy180;
 
 
             // Set main menu
             this.Menu = mainMenu;
+        }
+        private void ChangeShapeColor(Color color)
+        {
+            if (selectedShape != null)
+            {
+                // Set the color of the selected shape
+                selectedShape.Color = color;
+                Refresh(); // Redraw the form
+            }
+            else
+            {
+                MessageBox.Show("No shape selected. Please select a shape first.");
+            }
+        }
+        private void ChangeFillColor(Color color)
+        {
+            if (selectedShape != null)
+            {
+                // Set the fill color of the selected shape
+                selectedShape.FillColor = color;
+                Refresh(); // Redraw the form
+            }
+            else
+            {
+                MessageBox.Show("No shape selected. Please select a shape first.");
+            }
         }
         private void SelectSquare(object sender, EventArgs e)
         {
@@ -99,6 +187,7 @@ namespace GrafPack
             selectedShape = null;
         }
 
+
         private void MoveShape(object sender, EventArgs e)
         {
             if (selectedShape != null)
@@ -111,12 +200,28 @@ namespace GrafPack
                 MessageBox.Show("No shape selected. Please select a shape first.");
             }
         }
-        private void RotateShape(object sender, EventArgs e)
+        // Event handlers for rotating the shape by specific angles
+        private void RotateShapeBy45(object sender, EventArgs e)
+        {
+            RotateSelectedShape(45);
+        }
+
+        private void RotateShapeBy90(object sender, EventArgs e)
+        {
+            RotateSelectedShape(90);
+        }
+
+        private void RotateShapeBy180(object sender, EventArgs e)
+        {
+            RotateSelectedShape(180);
+        }
+
+        private void RotateSelectedShape(int angle)
         {
             if (selectedShape != null)
             {
                 // Implement rotate logic here
-                // For demonstration purposes, let's rotate the shape by 45 degrees clockwise
+                // For demonstration purposes, let's rotate the shape by the specified angle
 
                 // Get the center point of the shape
                 int centerX = (selectedShape.MinX + selectedShape.MaxX) / 2;
@@ -125,14 +230,14 @@ namespace GrafPack
                 // Rotate each point of the shape around the center point
                 if (selectedShape is Square square)
                 {
-                    RotatePoint(ref square.keyPt, centerX, centerY, 45);
-                    RotatePoint(ref square.oppPt, centerX, centerY, 45);
+                    RotatePoint(ref square.keyPt, centerX, centerY, angle);
+                    RotatePoint(ref square.oppPt, centerX, centerY, angle);
                 }
                 else if (selectedShape is Triangle triangle)
                 {
-                    RotatePoint(ref triangle.point1, centerX, centerY, 45);
-                    RotatePoint(ref triangle.point2, centerX, centerY, 45);
-                    RotatePoint(ref triangle.point3, centerX, centerY, 45);
+                    RotatePoint(ref triangle.point1, centerX, centerY, angle);
+                    RotatePoint(ref triangle.point2, centerX, centerY, angle);
+                    RotatePoint(ref triangle.point3, centerX, centerY, angle);
                 }
                 else if (selectedShape is Circle circle)
                 {
@@ -283,7 +388,7 @@ namespace GrafPack
                             {
                                 newShape = new Square(rubberBandStart, rubberBandEnd);
                             }
-                            
+
                             else if (createTriangle)
                             {
                                 // Create a triangle
@@ -342,6 +447,18 @@ namespace GrafPack
                     break;
                 }
             }
+            if (currentTextBox != null && !currentTextBox.Bounds.Contains(e.Location))
+            {
+                // Finish adding text box if the click is outside of the current text box
+                currentTextBox = null;
+                Refresh();
+            }
+            else if (currentTextBox != null && e.Button == MouseButtons.Left)
+            {
+                // Move the text box if the click is inside of it
+                currentTextBox.Location = e.Location;
+                Refresh();
+            }
 
             // If no shape was clicked, deselect any previously selected shape
             if (!shapeSelected)
@@ -372,11 +489,10 @@ namespace GrafPack
             // If a shape is being created and rubber band is active, draw the preview of the shape
             if (rubberBandActive && createShapeStatus)
             {
-                Pen previewPen = new Pen(Color.Gray); // Use a different color for the preview
-                previewPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash; // Use dashed lines for preview
+                Pen previewPen = new Pen(Color.Gray); // Use the same color for preview
                 if (createSquare)
                 {
-                    // Draw the preview of the square
+                    // Create the square based on the rubber band rectangle
                     int width = Math.Abs(rubberBandEnd.X - rubberBandStart.X);
                     int height = Math.Abs(rubberBandEnd.Y - rubberBandStart.Y);
                     int x = Math.Min(rubberBandStart.X, rubberBandEnd.X);
@@ -385,20 +501,28 @@ namespace GrafPack
                 }
                 else if (createTriangle)
                 {
-                    // Draw the preview of the triangle
+                    // Create the triangle based on the rubber band rectangle
                     Point midPoint = new Point((rubberBandStart.X + rubberBandEnd.X) / 2, (rubberBandStart.Y + rubberBandEnd.Y) / 2);
                     double angle = Math.Atan2(rubberBandEnd.Y - rubberBandStart.Y, rubberBandEnd.X - rubberBandStart.X);
                     double distance = Math.Sqrt(Math.Pow(rubberBandEnd.X - rubberBandStart.X, 2) + Math.Pow(rubberBandEnd.Y - rubberBandStart.Y, 2));
                     Point thirdPoint = new Point((int)(midPoint.X + distance * Math.Cos(angle - Math.PI / 3)), (int)(midPoint.Y + distance * Math.Sin(angle - Math.PI / 3)));
-                    g.DrawLine(previewPen, rubberBandStart, rubberBandEnd);
-                    g.DrawLine(previewPen, rubberBandEnd, thirdPoint);
-                    g.DrawLine(previewPen, thirdPoint, rubberBandStart);
+                    Point[] points = { rubberBandStart, rubberBandEnd, thirdPoint };
+                    g.DrawPolygon(previewPen, points);
                 }
                 else if (createCircle)
                 {
-                    // Draw the preview of the circle
-                    int radius = (int)Math.Sqrt(Math.Pow(rubberBandEnd.X - rubberBandStart.X, 2) + Math.Pow(rubberBandEnd.Y - rubberBandStart.Y, 2));
-                    g.DrawEllipse(previewPen, rubberBandStart.X - radius, rubberBandStart.Y - radius, 2 * radius, 2 * radius);
+                    // Create the circle based on the rubber band rectangle
+                    int diameter = (int)Math.Sqrt(Math.Pow(rubberBandEnd.X - rubberBandStart.X, 2) + Math.Pow(rubberBandEnd.Y - rubberBandStart.Y, 2));
+                    g.DrawEllipse(previewPen, rubberBandStart.X - diameter, rubberBandStart.Y - diameter, 2 * diameter, 2 * diameter);
+                }
+            }
+            if (currentTextBox != null)
+            {
+                // Draw the text box
+                using (Pen pen = new Pen(Color.Black))
+                {
+                    Rectangle textBoxRect = new Rectangle(currentTextBox.Location, currentTextBox.Size);
+                    e.Graphics.DrawRectangle(pen, textBoxRect);
                 }
             }
         }
@@ -458,6 +582,10 @@ namespace GrafPack
     }
     abstract class Shape
     {
+        public Color FillColor { get; set; } = Color.Transparent; // Default fill color is transparent
+
+        public Color Color { get; set; } = Color.Black; // Default color is black
+
         // This is the base class for Shapes in the application.
         public Shape() { }
 
@@ -482,6 +610,13 @@ namespace GrafPack
 
         public override void Draw(Graphics g, Pen pen)
         {
+            // Set the fill color
+            Brush brush = new SolidBrush(FillColor);
+
+            // Draw the filled square
+            g.FillRectangle(brush, keyPt.X, keyPt.Y, oppPt.X - keyPt.X, oppPt.Y - keyPt.Y);
+
+            pen.Color = Color;
             double xDiff, yDiff, xMid, yMid;
             xDiff = oppPt.X - keyPt.X;
             yDiff = oppPt.Y - keyPt.Y;
@@ -512,6 +647,12 @@ namespace GrafPack
 
         public override void Draw(Graphics g, Pen pen)
         {
+            // Set the fill color
+            Brush brush = new SolidBrush(FillColor);
+
+            // Draw the filled triangle
+            g.FillPolygon(brush, new Point[] { point1, point2, point3 });
+            pen.Color = Color;
             g.DrawLine(pen, point1, point2);
             g.DrawLine(pen, point2, point3);
             g.DrawLine(pen, point3, point1);
@@ -535,7 +676,14 @@ namespace GrafPack
 
         public override void Draw(Graphics g, Pen pen)
         {
+            // Set the fill color
+            Brush brush = new SolidBrush(FillColor);
+
+            // Draw the filled circle
             int radius = (int)Math.Sqrt(Math.Pow(circumference.X - center.X, 2) + Math.Pow(circumference.Y - center.Y, 2));
+            g.FillEllipse(brush, center.X - radius, center.Y - radius, 2 * radius, 2 * radius);
+
+            pen.Color = Color;
             g.DrawEllipse(pen, center.X - radius, center.Y - radius, 2 * radius, 2 * radius);
         }
 
@@ -545,4 +693,3 @@ namespace GrafPack
         public override int MaxY => center.Y;
     }
 }
-
