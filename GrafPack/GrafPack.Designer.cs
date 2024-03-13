@@ -38,6 +38,7 @@
             this.Cursor = System.Windows.Forms.Cursors.Cross;
             this.Name = "GrafPack";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.GrafPack_Load);
             this.ResumeLayout(false);
 
         }
