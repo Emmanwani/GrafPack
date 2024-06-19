@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace GrafPack
@@ -17,7 +18,7 @@ namespace GrafPack
         private bool createSquare = false;
         private bool createTriangle = false;
         private bool createCircle = false;
-
+        private bool showGridlines = false; // Flag to toggle gridlines
 
         private bool isMovingShape = false;
         private Point lastMousePosition;
@@ -38,12 +39,15 @@ namespace GrafPack
         {
             // Create main menu items
             mainMenu = new MainMenu();
+            MenuItem newFormItem = new MenuItem("&New");
+            MenuItem saveItem = new MenuItem("&Save");
             MenuItem createItem = new MenuItem("&Create");
             MenuItem selectItem = new MenuItem("&Select");
             MenuItem rotateItem = new MenuItem("&Rotate");
             MenuItem colorMenu = new MenuItem("&Colour");
             MenuItem borderItem = new MenuItem("&Border Thickness");
             MenuItem deleteItem = new MenuItem("&Delete");
+            MenuItem gridlinesItem = new MenuItem("&Gridlines");
             MenuItem exitItem = new MenuItem("&Exit");
 
             // Create sub-menu items for creation
@@ -60,6 +64,7 @@ namespace GrafPack
 
 
             // Add items to main menu
+            mainMenu.MenuItems.Add(saveItem);
             mainMenu.MenuItems.Add(createItem);
             mainMenu.MenuItems.Add(selectItem);
             mainMenu.MenuItems.Add(colorMenu);
@@ -115,6 +120,9 @@ namespace GrafPack
             borderItem.MenuItems.Add(thickness3);
             borderItem.MenuItems.Add(thickness4);
 
+            mainMenu.MenuItems.Add(gridlinesItem);
+            mainMenu.MenuItems.Add(newFormItem);
+
             colorRed.Click += (sender, e) => { ChangeShapeColor(Color.Red); };
             colorBlue.Click += (sender, e) => { ChangeShapeColor(Color.Blue); };
             colorGreen.Click += (sender, e) => { ChangeShapeColor(Color.Green); };
@@ -135,8 +143,8 @@ namespace GrafPack
             thickness4.Click += (sender, e) => { ChangeBorderThickness(4); };
 
 
-
             // Attach event handlers
+            newFormItem.Click += NewForm;
             deleteItem.Click += DeleteShape;
             exitItem.Click += ExitApplication;
             squareItem.Click += SelectSquare;
@@ -145,11 +153,59 @@ namespace GrafPack
             selectItem.Click += SelectShape;
             rotate90Item.Click += RotateShapeBy90;
             rotate180Item.Click += RotateShapeBy180;
+            gridlinesItem.Click += ToggleGridlines;
 
 
             // Set main menu
             this.Menu = mainMenu;
         }
+            private void ToggleGridlines(object sender, EventArgs e)
+        {
+            showGridlines = !showGridlines; // Toggle the flag
+
+            // Redraw the form to reflect the changes
+            Refresh();
+        }
+        private void NewForm(object sender, EventArgs e)
+        {
+            // Check if any shape in the array is not null
+            bool hasShapes = shapes.Any(shape => shape != null);
+
+            if (hasShapes)
+            {
+                DialogResult result = MessageBox.Show(
+                    "Do you want to save the current work before creating a new form?",
+                    "Save Work",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.Yes)
+                {
+                    SaveShapes();
+                    CreateNewForm();
+                }
+                else if (result == DialogResult.No)
+                {
+                    CreateNewForm();
+                }
+                // If Cancel, do nothing
+            }
+            else
+            {
+                CreateNewForm();
+            }
+        }
+        private void SaveShapes()
+        {
+            // Implement the saving logic here
+            MessageBox.Show("Saving shapes... (not yet implemented)");
+        }
+        private void CreateNewForm()
+        {
+            Array.Clear(shapes, 0, shapes.Length);
+        }
+
         private void ChangeShapeColor(Color color)
         {
             if (selectedShape != null)
@@ -494,11 +550,38 @@ namespace GrafPack
                 Refresh();
             }
         }
+        private void DrawGridlines(Graphics g)
+        {
+            // Set pen for gridlines
+            Pen gridPen = new Pen(Color.LightGray);
+
+            // Define grid spacing (adjust as needed)
+            int gridSize = 25;
+
+            // Draw vertical lines
+            for (int x = 0; x < ClientSize.Width; x += gridSize)
+            {
+                g.DrawLine(gridPen, x, 0, x, ClientSize.Height);
+            }
+
+            // Draw horizontal lines
+            for (int y = 0; y < ClientSize.Height; y += gridSize)
+            {
+                g.DrawLine(gridPen, 0, y, ClientSize.Width, y);
+            }
+        }
 
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
+
+            // Draw gridlines if enabled
+            if (showGridlines)
+            {
+                DrawGridlines(e.Graphics);
+            }
+
             // Draw all shapes
             Graphics g = e.Graphics;
             for (int i = 0; i < shapeCount; i++)
@@ -593,23 +676,19 @@ namespace GrafPack
             }
             return false;
         }
+        private bool IsPointInsideCircle(Point point, Circle circle)
+        {
+            if (point.X >= circle.MinX && point.X <= circle.MaxX &&
+                point.Y >= circle.MinY && point.Y <= circle.MaxY)
+            {
+                return true;
+            }
+            // Check if the distance is less than or equal to the radius
 
-private bool IsPointInsideCircle(Point point, Circle circle)
-{
-    // Calculate the radius of the circle including the border thickness
-    int radius = (circle.MaxX - circle.MinX) / 2 + circle.BorderThickness / 2;
+            return false;
+        }
 
-    // Calculate the distance between the point and the center of the circle
-    double distance = Math.Sqrt(Math.Pow(point.X - circle.center.X, 2) + Math.Pow(point.Y - circle.center.Y, 2));
 
-    // Check if the distance is less than or equal to the radius
-    if (distance <= radius)
-    {
-        return true;
-    }
-
-    return false;
-}
 
         private void GrafPack_Load(object sender, EventArgs e)
         {
