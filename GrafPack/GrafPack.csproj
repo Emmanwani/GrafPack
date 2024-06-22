@@ -46,16 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GrafPack.cs">
+    <Compile Include="..\..\..\..\..\OneDrive\Documents\BEng %28Hons%29 Computer Science\CGP\GrafPack.cs">
       <SubType>Form</SubType>
+      <Link>GrafPack.cs</Link>
     </Compile>
-    <Compile Include="GrafPack.Designer.cs">
+    <Compile Include="..\..\..\..\..\OneDrive\Documents\BEng %28Hons%29 Computer Science\CGP\GrafPack.Designer.cs">
       <DependentUpon>GrafPack.cs</DependentUpon>
+      <Link>GrafPack.Designer.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="GrafPack.resx">
+    <EmbeddedResource Include="..\..\..\..\..\OneDrive\Documents\BEng %28Hons%29 Computer Science\CGP\GrafPack.resx">
       <DependentUpon>GrafPack.cs</DependentUpon>
+      <Link>GrafPack.resx</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
